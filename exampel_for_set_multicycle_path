@@ -1,0 +1,31 @@
+https://support.xilinx.com/s/article/63222?language=en_US这个链接展示了如何使用set_multicycle_path：
+use case 1:
+The data toggles every two cycles of the capture clock. 图片请看链接：或者同文件夹下的图片：set_multcycle_path_case1.png
+对于输入：
+create_clock -name clk0 -period 8.0 [get_ports CLK0]
+set_input_delay -max 3.0 -clock clk0 [get_ports DIN]
+set_input_delay -min 2.0 -clock clk0 [get_ports DIN]
+set_multicycle_path -setup 2 -from [get_ports DIN] -to [get_clocks clk0] # relax the setup requirement
+set_multicycle_path -hold 1 -from [get_ports DIN] -to [get_clocks clk0] # keep the hold requirement unchanged
+对于输出：
+create_clock -name clk0 -period 8.0 [get_ports CLK0]
+set_output_delay -max 5.0 -clock clk0 [get_ports DOUT]
+set_output_delay -min -2.0 -clock clk0 [get_ports DOUT]
+set_multicycle_path -setup 2 -from [get_clocks clk0] -to [get_ports DOUT] # relax the setup requirement
+set_multicycle_path -hold 1 -from [get_clocks clk0] -to [get_ports DOUT] # keep the hold requirement unchanged
+
+use case 2:
+The capture clock has a phase shift compared to the launchclock.图片请看链接：或者同文件夹下的图片：set_multcycle_path_case2.png
+输入：
+create_clock -name clk0 -period 8.0 [get_ports CLK0]
+set_input_delay -max 3.0 -clock clk0 [get_ports DIN]
+set_input_delay -min 2.0 -clock clk0 [get_ports DIN]
+set_multicycle_path -setup 2 -from [get_ports DIN] -to [get_clocks clk0]
+输出：
+create_clock -name clk0 -period 8.0 [get_ports CLK0]
+create_generated_clock -name fwclk -multiply_by 1 -source [get_pins oddr_inst/C] [get_ports CLKOUT]
+set_output_delay -max 6.0 -clock fwclk [get_ports DOUT]
+set_output_delay -min -1.0 -clock fwclk [get_ports DOUT]
+set_multicycle_path -setup 2 -from [get_clocks clk0] -to [get_ports DOUT]
+
+https://support.xilinx.com/s/article/59893?language=en_US这个也是很好的使用set_multicycle_path的例子
